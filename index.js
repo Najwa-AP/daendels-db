@@ -1,18 +1,67 @@
+const { time, timeStamp } = require("console");
+const fs = require("fs");
+const path = require("path");
+
 class DaendelsDB {
-    constructor() {
+    constructor(filepath = "daendels.log") {
         this.storage = new Map(); // store data in RAM
+        this.logFilePath = path.resolve(filepath);
+        this._loadFromDisk();
     }
 
-    // BUILD command (save data)
+    // private method for restore data from file
+    _loadFromDisk() {
+        if (!fs.existsSync(this.logFilePath)) {
+            // if not exist, create one
+            fs.writeFileSync(this.logFilePath, "", "utf-8");
+            return;
+        }
+
+        // read all content of log file
+        const fileContent = fs.readFileSync(this.logFilePath, "utf-8");
+        const lines = fileContent.split("\n");
+
+        for (const line of lines) {
+            if (!line.trim()) continue; // ignoring empty lines
+            
+            try {
+                const entry = JSON.parse(line);
+                if (entry.action === "BUILD") {
+                    this.storage.set(entry.key, entry.value);
+                }
+            } catch (err) {
+                console.error("[Daendels] Error corrupt line ignored:", line);
+            }
+        }
+    }
+
+    // BUILD command (SET)
     build(key, value) {
         if (!key | !value) {
             return "[Daendels] Error: Key and Value must not be empty!";
         }
+
+        // save to RAM
         this.storage.set(key, value);
-        return `[Daendels] Post road successfully built for key: '${key}'`;
+
+        // log format 
+        const logEntry = JSON.stringify({
+            action: "BUILD",
+            key: key,
+            value: value,
+            timeStamp: new Date().toISOString(),
+        }) + "\n";
+
+        // write to disk (append-only)
+        try {
+            fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
+            return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
+        } catch (err) {
+            return `[Daendels System] Critical Error: Failed to persist key '${key}' to disk!`;
+        }
     }
 
-    // INSPECT command (retrieve data)
+    // INSPECT command (GET)
     inspect(key) {
         if (!this.storage.has(key)) {
             return `[Daendels] Error: Key '${key}' not found along the post road!`;
@@ -23,6 +72,6 @@ class DaendelsDB {
 
 // test
 const db = new DaendelsDB();
-console.log(db.build("fortress", "Anyer"));
+// console.log(db.build("fortress", "Anyer"));
+// console.log(db.build("hq", "Batavia"));
 console.log(db.inspect("fortress"));
-console.log(db.inspect("office"));
