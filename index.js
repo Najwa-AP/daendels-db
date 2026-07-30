@@ -1,4 +1,3 @@
-const { time, timeStamp } = require("console");
 const fs = require("fs");
 const path = require("path");
 
@@ -19,7 +18,7 @@ class DaendelsDB {
 
         // read all content of log file
         const fileContent = fs.readFileSync(this.logFilePath, "utf-8");
-        const lines = fileContent.split("\n");
+        const lines = fileContent.split(/\r?\n/);
 
         for (const line of lines) {
             if (!line.trim()) continue; // ignoring empty lines
@@ -28,16 +27,18 @@ class DaendelsDB {
                 const entry = JSON.parse(line);
                 if (entry.action === "BUILD") {
                     this.storage.set(entry.key, entry.value);
+                } else if (entry.action === "DEMOLISH") {
+                    this.storage.delete(entry.key);
                 }
             } catch (err) {
-                console.error("[Daendels] Error corrupt line ignored:", line);
+                console.error(`[Daendels] Corrupted log entry ignored: ${line}`);
             }
         }
     }
 
     // BUILD command (SET)
     build(key, value) {
-        if (!key | !value) {
+        if (!key || value === undefined) {
             return "[Daendels] Error: Key and Value must not be empty!";
         }
 
@@ -47,9 +48,9 @@ class DaendelsDB {
         // log format 
         const logEntry = JSON.stringify({
             action: "BUILD",
-            key: key,
-            value: value,
-            timeStamp: new Date().toISOString(),
+            key,
+            value,
+            timestamp: new Date().toISOString(),
         }) + "\n";
 
         // write to disk (append-only)
@@ -57,7 +58,7 @@ class DaendelsDB {
             fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
             return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
         } catch (err) {
-            return `[Daendels System] Critical Error: Failed to persist key '${key}' to disk!`;
+            throw err;
         }
     }
 
@@ -68,10 +69,38 @@ class DaendelsDB {
         }
         return this.storage.get(key);
     }
+
+    // DEMOLISH command (DELETE)
+    demolish(key) {
+        if (!key) {
+            return "[Daendels] Error: Key must not be empty!";
+        } else if (!this.storage.has(key)) {
+            return `[Daendels] Error: Key '${key}' not found along the post road!`;
+        }
+
+        // log format 
+        const logEntry = JSON.stringify({
+            action: "DEMOLISH",
+            key,
+            timestamp: new Date().toISOString(),
+        }) + "\n";
+
+        // write to disk (append-only)
+        try {
+            fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
+            this.storage.delete(key);
+            return `[Daendels] Post road successfully demolish the key!`;
+        } catch (err) {
+            throw err;
+        }
+    }
+
 }
 
 // test
 const db = new DaendelsDB();
-// console.log(db.build("fortress", "Anyer"));
-// console.log(db.build("hq", "Batavia"));
+console.log(db.build("fortress", "Anyer"));
+console.log(db.build("hq", "Batavia"));
+console.log(db.demolish("fortress"));
+console.log(db.demolish("abc"));
 console.log(db.inspect("fortress"));

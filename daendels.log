@@ -1,2 +1,11 @@
 {"action":"BUILD","key":"fortress","value":"Anyer","timeStamp":"2026-07-30T08:16:39.646Z"}
 {"action":"BUILD","key":"hq","value":"Batavia","timeStamp":"2026-07-30T08:16:39.710Z"}
+{"action":"BUILD","key":"fortress","value":"Anyer","timestamp":"2026-07-30T08:50:40.963Z"}
+{"action":"BUILD","key":"hq","value":"Batavia","timestamp":"2026-07-30T08:50:40.998Z"}
+{"action":"DEMOLISH","key":"fortress","timestamp":"2026-07-30T08:50:40.999Z"}
+{"action":"BUILD","key":"fortress","value":"Anyer","timestamp":"2026-07-30T08:53:00.652Z"}
+{"action":"BUILD","key":"hq","value":"Batavia","timestamp":"2026-07-30T08:53:00.680Z"}
+{"action":"DEMOLISH","key":"fortress","timestamp":"2026-07-30T08:53:00.681Z"}
+{"action":"BUILD","key":"fortress","value":"Anyer","timestamp":"2026-07-30T08:55:57.620Z"}
+{"action":"BUILD","key":"hq","value":"Batavia","timestamp":"2026-07-30T08:55:57.623Z"}
+{"action":"DEMOLISH","key":"fortress","timestamp":"2026-07-30T08:55:57.624Z"}
