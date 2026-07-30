@@ -36,6 +36,23 @@ class DaendelsDB {
         }
     }
 
+    // private method for write data to file
+    _appendLog(action, key, value) { 
+        const entry = {
+            action,
+            key,
+            timestamp: new Date().toISOString(),
+        };
+
+        if (value !== undefined) {
+            entry.value = value;
+        }
+
+        const logEntry = JSON.stringify(entry) + "\n";
+
+        fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
+    }
+
     // BUILD command (SET)
     build(key, value) {
         if (!key || value === undefined) {
@@ -45,21 +62,13 @@ class DaendelsDB {
         // save to RAM
         this.storage.set(key, value);
 
-        // log format 
-        const logEntry = JSON.stringify({
-            action: "BUILD",
+        // write to disk (append-only)
+        this._appendLog(
+            "BUILD",
             key,
             value,
-            timestamp: new Date().toISOString(),
-        }) + "\n";
-
-        // write to disk (append-only)
-        try {
-            fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
-            return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
-        } catch (err) {
-            throw err;
-        }
+        );
+        return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
     }
 
     // INSPECT command (GET)
@@ -78,23 +87,14 @@ class DaendelsDB {
             return `[Daendels] Error: Key '${key}' not found along the post road!`;
         }
 
-        // log format 
-        const logEntry = JSON.stringify({
-            action: "DEMOLISH",
-            key,
-            timestamp: new Date().toISOString(),
-        }) + "\n";
-
         // write to disk (append-only)
-        try {
-            fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
-            this.storage.delete(key);
+        this._appendLog(
+            "DEMOLISH",
+            key,
+        );
+        this.storage.delete(key);
             return `[Daendels] Post road successfully demolish the key!`;
-        } catch (err) {
-            throw err;
-        }
     }
-
 }
 
 // test
