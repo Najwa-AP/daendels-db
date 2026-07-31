@@ -95,6 +95,40 @@ class DaendelsDB {
         this.storage.delete(key);
             return `[Daendels] Post road successfully demolish the key!`;
     }
+
+    // SURVEY command (LIST)
+    survey(key) {
+        return Array.from(this.storage.entries());
+    }
+
+    // STATS command (STATUS)
+    stats() {
+        // records
+        const records = this.storage.size;
+        // log file name
+        const logFile = path.basename(this.logFilePath);
+        // log file size
+        const logSize = fs.statSync(this.logFilePath).size;
+        // log entries
+        const fileContent = fs.readFileSync(this.logFilePath, "utf-8");
+        const lines = fileContent.split(/\r?\n/);
+
+        let logEntries = 0;
+        for (const line of lines) {
+            if (!line.trim()) continue; // ignoring empty lines
+            logEntries++;
+        }
+
+        return {
+            database: "DaendelsDB",
+            engine: "In-Memory + Append Log",
+            records,
+            logFile,
+            logSize,
+            logEntries,
+            status: "Operational",
+        };
+    }
 }
 
 // test
@@ -104,3 +138,5 @@ console.log(db.build("hq", "Batavia"));
 console.log(db.demolish("fortress"));
 console.log(db.demolish("abc"));
 console.log(db.inspect("fortress"));
+console.log(db.survey());
+console.log(db.stats());
