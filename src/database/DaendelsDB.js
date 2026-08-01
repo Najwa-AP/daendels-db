@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const ERROR = require("../messages/error");
+const WARNING = require("../messages/warning");
 
 const ACTIONS = {
     BUILD: "BUILD",
@@ -36,7 +38,9 @@ class DaendelsDB {
                     this.storage.delete(entry.key);
                 }
             } catch (err) {
-                console.error(`[Daendels] Corrupted log entry ignored: ${line}`);
+                console.warn(
+                    `${WARNING.CORRUPTED_LOG(line)}`
+                );
             }
         }
     }
@@ -69,7 +73,7 @@ class DaendelsDB {
     _validateBuild(key, value) { 
         if (!key || value === undefined) {
             throw this._createError (
-                "Key and Value must not be empty!"
+                ERROR.EMPTY_KEY_VALUE
             );    
         }
     }
@@ -78,13 +82,13 @@ class DaendelsDB {
     _validateInspect(key) { 
         if (!key) {
             throw this._createError (
-                `Key must not be empty`
+                ERROR.EMPTY_KEY
             );
         }
 
         if (!this.storage.has(key)) {
             throw this._createError (
-                `Key '${key}' not found along the post road!`
+                ERROR.KEY_NOT_FOUND(key)
             );
         }
     }
@@ -93,13 +97,13 @@ class DaendelsDB {
     _validateDemolish(key) { 
         if (!key) {
             throw this._createError (
-                `Key must not be empty`
+                ERROR.EMPTY_KEY
             );
         }
 
         if (!this.storage.has(key)) {
             throw this._createError (
-                `Key '${key}' not found along the post road!`
+                ERROR.KEY_NOT_FOUND(key)
             );
         }
     }
@@ -115,7 +119,7 @@ class DaendelsDB {
         // write to disk (append-only)
         this._appendLog(ACTIONS.BUILD, key, value);
 
-        return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
+        return true;
     }
 
     // INSPECT command (GET)
@@ -135,7 +139,8 @@ class DaendelsDB {
         this._appendLog(ACTIONS.DEMOLISH, key);
 
         this.storage.delete(key);
-            return `[Daendels] Post road successfully demolish the key!`;
+            
+        return true;
     }
 
     // SURVEY command (LIST)
@@ -172,5 +177,4 @@ class DaendelsDB {
         };
     }
 }
-
 module.exports = DaendelsDB;

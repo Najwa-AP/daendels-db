@@ -1,5 +1,7 @@
 const readline = require("readline");
 const DaendelsDB = require("../database/DaendelsDB");
+const SUCCESS = require("../messages/success");
+const ERROR = require("../messages/error");
 
 const db = new DaendelsDB();
 
@@ -42,42 +44,66 @@ function startCLI() {
 }
 
 function executeCommand(command, args, rl) {
-    switch (command) {
-        case "BUILD":
-            console.log(db.build(args[1], args[2]));
-            return true;
-        case "INSPECT":
-            console.log(db.inspect(args[1]));
-            return true;
-        case "DEMOLISH":
-            console.log(db.demolish(args[1]));
-            return true;
-        case "SURVEY":
-            console.table(db.survey());
-            return true;
-        case "STATS":
-            console.table(db.stats());
-            return true;
-        case "HELP":
-            console.log(`
-                Available Commands
+    try {
+        switch (command) {
+            case "BUILD":
+                db.build(args[1], args[2]);
+                console.log(
+                    `[Daendels] ${SUCCESS.BUILD(args[1])}`
+                );
+                return true;
+            case "INSPECT":
+                console.log(db.inspect(args[1]));
+                console.log(
+                    `[Daendels] ${SUCCESS.INSPECT}`
+                );
+                return true;
+            case "DEMOLISH":
+                db.demolish(args[1]);
+                console.log(
+                    `[Daendels] ${SUCCESS.DEMOLISH(args[1])}`
+                );
+                return true;
+            case "SURVEY":
+                console.table(db.survey());
+                console.log(
+                    `[Daendels] ${SUCCESS.SURVEY}`
+                );
+                return true;
+            case "STATS":
+                console.table(db.stats());
+                console.log(
+                    `[Daendels] ${SUCCESS.STATS}`
+                );
+                return true;
+            case "HELP":
+                console.log(`
+                    Available Commands
 
-                BUILD <key> <value>
-                INSPECT <key>
-                DEMOLISH <key>
-                SURVEY
-                STATS
-                HELP
-                EXIT
-            `);
-            return true;
-        case "EXIT":
-            console.log("Shutting down DaendelsDB...");
-            rl.close();
-            return false;
-        default:
-            console.log("[Daendels] Unknown command");
-            return true;
+                    BUILD <key> <value>
+                    INSPECT <key>
+                    DEMOLISH <key>
+                    SURVEY
+                    STATS
+                    HELP
+                    EXIT
+                `);
+                return true;
+            case "EXIT":
+                console.log(
+                    `[Daendels] ${SUCCESS.EXIT}`
+                );
+                rl.close();
+                return false;
+            default:
+                console.log(
+                    `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                );
+                return true;
+        }
+    } catch(err){
+        console.error(err.message);
+        return true;
     }
 }
 module.exports = startCLI;
