@@ -58,12 +58,27 @@ class DaendelsDB {
         fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
     }
 
-    // private method for validate input
+    // private method for validate BUILD 
     _validateBuild(key, value) { 
         if (!key || value === undefined) {
             throw new Error (
                 "[Daendels] Error: Key and Value must not be empty!"
             );    
+        }
+    }
+
+    // private method for validate INSPECT 
+    _validateInspect(key) { 
+        if (!key) {
+            throw new Error (
+                `[Daendels] Error: Key must not be empty`
+            );
+        }
+
+        if (!this.storage.has(key)) {
+            throw new Error (
+                `[Daendels] Error: Key '${key}' not found along the post road!`
+            );
         }
     }
 
@@ -83,9 +98,9 @@ class DaendelsDB {
 
     // INSPECT command (GET)
     inspect(key) {
-        if (!this.storage.has(key)) {
-            return `[Daendels] Error: Key '${key}' not found along the post road!`;
-        }
+        // validate input
+        this._validateInspect(key);
+
         return this.storage.get(key);
     }
 
