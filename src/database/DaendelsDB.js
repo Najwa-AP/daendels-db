@@ -53,21 +53,26 @@ class DaendelsDB {
         fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
     }
 
+    // private method for validate input
+    _validateBuild(key, value) { 
+        if (!key || value === undefined) {
+            throw new Error (
+                "[Daendels] Error: Key and Value must not be empty!"
+            );    
+        }
+    }
+
     // BUILD command (SET)
     build(key, value) {
-        if (!key || value === undefined) {
-            return "[Daendels] Error: Key and Value must not be empty!";
-        }
+        // validate input
+        this._validateBuild(key, value);
 
         // save to RAM
         this.storage.set(key, value);
 
         // write to disk (append-only)
-        this._appendLog(
-            "BUILD",
-            key,
-            value,
-        );
+        this._appendLog("BUILD", key, value);
+
         return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
     }
 
@@ -88,10 +93,8 @@ class DaendelsDB {
         }
 
         // write to disk (append-only)
-        this._appendLog(
-            "DEMOLISH",
-            key,
-        );
+        this._appendLog("DEMOLISH", key);
+
         this.storage.delete(key);
             return `[Daendels] Post road successfully demolish the key!`;
     }
