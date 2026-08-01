@@ -58,11 +58,18 @@ class DaendelsDB {
         fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
     }
 
+    // method for handling error message
+    _createError(message) {
+        return new Error(
+            `[Daendels] ${message}`
+        );
+    }
+
     // private method for validate BUILD 
     _validateBuild(key, value) { 
         if (!key || value === undefined) {
-            throw new Error (
-                "[Daendels] Error: Key and Value must not be empty!"
+            throw this._createError (
+                "Key and Value must not be empty!"
             );    
         }
     }
@@ -70,14 +77,29 @@ class DaendelsDB {
     // private method for validate INSPECT 
     _validateInspect(key) { 
         if (!key) {
-            throw new Error (
-                `[Daendels] Error: Key must not be empty`
+            throw this._createError (
+                `Key must not be empty`
             );
         }
 
         if (!this.storage.has(key)) {
-            throw new Error (
-                `[Daendels] Error: Key '${key}' not found along the post road!`
+            throw this._createError (
+                `Key '${key}' not found along the post road!`
+            );
+        }
+    }
+
+    // private method for validate DEMOLISH 
+    _validateDemolish(key) { 
+        if (!key) {
+            throw this._createError (
+                `Key must not be empty`
+            );
+        }
+
+        if (!this.storage.has(key)) {
+            throw this._createError (
+                `Key '${key}' not found along the post road!`
             );
         }
     }
@@ -106,11 +128,8 @@ class DaendelsDB {
 
     // DEMOLISH command (DELETE)
     demolish(key) {
-        if (!key) {
-            return "[Daendels] Error: Key must not be empty!";
-        } else if (!this.storage.has(key)) {
-            return `[Daendels] Error: Key '${key}' not found along the post road!`;
-        }
+        // validate input
+        this._validateDemolish(key);
 
         // write to disk (append-only)
         this._appendLog(ACTIONS.DEMOLISH, key);
