@@ -1,6 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 
+const ACTIONS = {
+    BUILD: "BUILD",
+    DEMOLISH: "DEMOLISH",
+};
+
 class DaendelsDB {
     constructor(filepath = "daendels.log") {
         this.storage = new Map(); // store data in RAM
@@ -25,9 +30,9 @@ class DaendelsDB {
             
             try {
                 const entry = JSON.parse(line);
-                if (entry.action === "BUILD") {
+                if (entry.action === ACTIONS.BUILD) {
                     this.storage.set(entry.key, entry.value);
-                } else if (entry.action === "DEMOLISH") {
+                } else if (entry.action === ACTIONS.DEMOLISH) {
                     this.storage.delete(entry.key);
                 }
             } catch (err) {
@@ -71,7 +76,7 @@ class DaendelsDB {
         this.storage.set(key, value);
 
         // write to disk (append-only)
-        this._appendLog("BUILD", key, value);
+        this._appendLog(ACTIONS.BUILD, key, value);
 
         return `[Daendels] Post road successfully built and persisted for key: '${key}'`;
     }
@@ -93,7 +98,7 @@ class DaendelsDB {
         }
 
         // write to disk (append-only)
-        this._appendLog("DEMOLISH", key);
+        this._appendLog(ACTIONS.DEMOLISH, key);
 
         this.storage.delete(key);
             return `[Daendels] Post road successfully demolish the key!`;
