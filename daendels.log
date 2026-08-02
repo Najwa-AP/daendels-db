@@ -1,6 +1,3 @@
-{"action":"BUILD","key":"\"love\",","timestamp":"2026-07-31T06:13:42.797Z","value":"\"daendels\""}
-{"action":"DEMOLISH","key":"\"love\",","timestamp":"2026-07-31T06:14:36.528Z"}
-{"action":"BUILD","key":"love","timestamp":"2026-07-31T06:14:54.490Z","value":"him"}
-{"action":"BUILD","key":"mie","timestamp":"2026-07-31T06:15:02.455Z","value":"goreng"}
-{"action":"BUILD","key":"gubernur","timestamp":"2026-07-31T06:15:07.273Z","value":"jenderal"}
-{"action":"DEMOLISH","key":"mie","timestamp":"2026-07-31T06:15:40.225Z"}
+{"action":"BUILD","key":"fortress","timestamp":"2026-08-02T02:52:59.608Z","value":"Anyer"}
+{"action":"BUILD","key":"\"\"","timestamp":"2026-08-02T02:54:09.953Z","value":"Anyer"}
+{"action":"BUILD","key":"1","timestamp":"2026-08-02T03:02:09.316Z","value":"2"}

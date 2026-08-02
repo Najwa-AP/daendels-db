@@ -47,18 +47,36 @@ function executeCommand(command, args, rl) {
     try {
         switch (command) {
             case "BUILD":
+                if (args.length < 3) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
                 db.build(args[1], args[2]);
                 console.log(
                     `[Daendels] ${SUCCESS.BUILD(args[1])}`
                 );
                 return true;
             case "INSPECT":
+                if (args.length < 3) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
                 console.log(db.inspect(args[1]));
                 console.log(
                     `[Daendels] ${SUCCESS.INSPECT}`
                 );
                 return true;
             case "DEMOLISH":
+                if (args.length < 3) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
                 db.demolish(args[1]);
                 console.log(
                     `[Daendels] ${SUCCESS.DEMOLISH(args[1])}`

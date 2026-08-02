@@ -69,22 +69,44 @@ class DaendelsDB {
         );
     }
 
-    // private method for validate BUILD 
-    _validateBuild(key, value) { 
-        if (!key || value === undefined) {
+    // handle the key validation
+    _validateKey(key) {
+        if (typeof key !== "string") {
             throw this._createError (
-                ERROR.EMPTY_KEY_VALUE
+                ERROR.INVALID_KEY_TYPE
+            );    
+        }
+        if (!key.trim()) {
+            throw this._createError (
+                ERROR.EMPTY_KEY
             );    
         }
     }
 
+    // handle the value validation
+    _validateValue(value) {
+        if (typeof value !== "string") {
+            throw this._createError (
+                ERROR.INVALID_VALUE_TYPE
+            );    
+        }
+        if (!value.trim()) {
+            throw this._createError (
+                ERROR.EMPTY_VALUE
+            );    
+        }
+    }
+
+    // private method for validate BUILD 
+    _validateBuild(key, value) { 
+        this._validateKey(key);
+
+        this._validateValue(value);
+    }
+
     // private method for validate INSPECT 
     _validateInspect(key) { 
-        if (!key) {
-            throw this._createError (
-                ERROR.EMPTY_KEY
-            );
-        }
+        this._validateKey(key);
 
         if (!this.storage.has(key)) {
             throw this._createError (
@@ -95,11 +117,7 @@ class DaendelsDB {
 
     // private method for validate DEMOLISH 
     _validateDemolish(key) { 
-        if (!key) {
-            throw this._createError (
-                ERROR.EMPTY_KEY
-            );
-        }
+        this._validateKey(key);
 
         if (!this.storage.has(key)) {
             throw this._createError (
@@ -124,7 +142,6 @@ class DaendelsDB {
 
     // INSPECT command (GET)
     inspect(key) {
-        // validate input
         this._validateInspect(key);
 
         return this.storage.get(key);
