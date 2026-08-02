@@ -4,9 +4,9 @@ const ERROR = {
     EMPTY_VALUE:
         "Value must not be empty.",
     INVALID_KEY_TYPE:
-        "Key must be a string.",
+        "Unsupported key type.",
     INVALID_VALUE_TYPE:
-        "Value must be a string.",
+        "Unsupported value type.",
     KEY_NOT_FOUND: (key) => 
         `Key '${key}' not found along the post road.`,
     UNKNOWN_COMMAND:
