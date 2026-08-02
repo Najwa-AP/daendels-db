@@ -8,6 +8,13 @@ const ACTIONS = {
     DEMOLISH: "DEMOLISH",
 };
 
+const ALLOWED_TYPES = [
+    "string",
+    "number",
+    "boolean",
+    "object",
+];
+
 class DaendelsDB {
     constructor(filepath = "daendels.log") {
         this.storage = new Map(); // store data in RAM
@@ -71,12 +78,14 @@ class DaendelsDB {
 
     // handle the key validation
     _validateKey(key) {
-        if (typeof key !== "string") {
+        const keyType = typeof key;
+
+        if (!ALLOWED_TYPES.includes(keyType)) {
             throw this._createError (
                 ERROR.INVALID_KEY_TYPE
             );    
         }
-        if (!key.trim()) {
+        if (keyType === "string" && !key.trim()){
             throw this._createError (
                 ERROR.EMPTY_KEY
             );    
@@ -85,12 +94,14 @@ class DaendelsDB {
 
     // handle the value validation
     _validateValue(value) {
-        if (typeof value !== "string") {
+        const valueType = typeof value;
+
+        if (!ALLOWED_TYPES.includes(valueType)) {
             throw this._createError (
                 ERROR.INVALID_VALUE_TYPE
             );    
         }
-        if (!value.trim()) {
+        if (valueType === "string" && !value.trim()){
             throw this._createError (
                 ERROR.EMPTY_VALUE
             );    
