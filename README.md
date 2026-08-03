@@ -1,10 +1,16 @@
 # DaendelsDB
 
-> A lightweight append-only key-value database engine written in pure Node.js.
+> A lightweight append-only key-value database engine built from scratch using pure Node.js.
 
 DaendelsDB is a learning project that explores how a simple database engine works internally without relying on third-party libraries. The project focuses on clean architecture, append-only persistence, and modular software engineering principles.
 
 The project is inspired by **Herman Willem Daendels** and the historic **Great Post Road (Jalan Raya Pos)**, where every database operation is treated as a logistical record written permanently into an append-only log.
+
+## Why DaendelsDB?
+
+DaendelsDB was built as a software engineering learning project to understand how database engines work internally. Instead of relying on existing databases, every storage mechanism—including append-only logging, snapshot persistence, startup recovery, and command processing—is implemented from scratch using only Node.js built-in modules.
+
+The project emphasizes clean architecture, modular design, and database internals rather than production-ready performance.
 
 ---
 
@@ -13,9 +19,12 @@ The project is inspired by **Herman Willem Daendels** and the historic **Great P
 ### Core Engine
 
 - In-Memory storage using JavaScript `Map`
-- Append-Only Log persistence
-- Automatic recovery from log file on startup
-- Synchronous file persistence using Node.js built-in `fs`
+- Append-only log persistence
+- Snapshot persistence
+- Automatic recovery from snapshot and append log
+- Primitive value parser
+- Input validation layer
+- Modular message system
 
 ### Database Commands
 
@@ -31,21 +40,40 @@ The project is inspired by **Herman Willem Daendels** and the historic **Great P
 - HELP command
 - EXIT command
 
+## Storage Files
+
+DaendelsDB persists data using two storage files.
+
+| File | Purpose |
+|------|---------|
+| daendels.log | Append-only operation log |
+| snapshot.json | Snapshot of the latest database state |
+
 ### Current Architecture
 
 ```text
 CLI
  │
  ▼
+Command Parser
+ │
+ ▼
+Validation Layer
+ │
+ ▼
 DaendelsDB Engine
  │
  ├── In-Memory Map
- ├── Validation Layer
- ├── Message Modules
- └── Append-Only Log
-          │
-          ▼
-    daendels.log
+ │
+ ├── Snapshot Manager
+ │      │
+ │      ▼
+ │  snapshot.json
+ │
+ └── Append Log
+        │
+        ▼
+   daendels.log
 ```
 
 ---
@@ -57,6 +85,9 @@ daendels-db/
 
 ├── index.js
 ├── daendels.log
+├── snapshot.json
+├── package.json
+├── README.md
 │
 └── src
     ├── cli
@@ -82,29 +113,9 @@ daendels-db/
 | DEMOLISH `<key>` | Delete a record |
 | SURVEY | Display all stored records |
 | STATS | Show database statistics |
+| SNAPSHOT | Save current database state |
 | HELP | Show available commands |
 | EXIT | Close DaendelsDB |
-
----
-
-## Storage Engine
-
-DaendelsDB currently uses:
-
-```
-    RAM (Map)
-        │
-        ▼
-BUILD / DEMOLISH
-        │
-        ▼
-Append-Only Log
-        │
-        ▼
-Recovery on Startup
-```
-
-This architecture is inspired by append-only storage engines used in databases such as Redis.
 
 ---
 
@@ -143,7 +154,8 @@ This architecture is inspired by append-only storage engines used in databases s
 
 ### Version 0.6
 
-- ⏳ Snapshot
+- ✅ CLI parser
+- ✅ Snapshot
 - ⏳ Compact Log
 
 ### Version 0.7
@@ -155,7 +167,7 @@ This architecture is inspired by append-only storage engines used in databases s
 
 - ⏳ Query filtering
 - ⏳ Prefix search
-- ⏳ Secondary index
+- ⏳ Collections API
 
 ### Version 0.9
 
@@ -164,6 +176,7 @@ This architecture is inspired by append-only storage engines used in databases s
 
 ### Version 1.0
 
+- ⏳ Secondary index
 - ⏳ Configuration file
 - ⏳ Unit tests
 - ⏳ Benchmark
@@ -178,10 +191,12 @@ This architecture is inspired by append-only storage engines used in databases s
 - Separate engine from presentation layer
 - Avoid third-party dependencies
 - Build everything using Node.js built-in modules
+- Understand append-only storage engines
+- Explore database persistence and recovery
 
 ---
 
-## Technologies
+## Built-in Modules
 
 - JavaScript (Node.js)
 - CommonJS Modules
