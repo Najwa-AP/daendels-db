@@ -8,7 +8,7 @@ const ACTIONS = {
     DEMOLISH: "DEMOLISH",
 };
 
-const ALLOWED_TYPES = [
+const ALLOWED_VALUE_TYPES = [
     "string",
     "number",
     "boolean",
@@ -16,10 +16,55 @@ const ALLOWED_TYPES = [
 ];
 
 class DaendelsDB {
-    constructor(filepath = "daendels.log") {
+    constructor(
+        filepath = "daendels.log",
+        snapshotFilePath = "snapshot.json"
+    ) {
         this.storage = new Map(); // store data in RAM
+
         this.logFilePath = path.resolve(filepath);
+        this.snapshotFilePath = path.resolve(snapshotFilePath);
+        
+        this._loadSnapshot();
         this._loadFromDisk();
+    }
+
+    // private method for restore data from snapshot
+    _loadSnapshot() {
+        // check if the snapshot file is exist
+        if (!fs.existsSync(this.snapshotFilePath)) {
+            return;
+        }
+
+        const fileContent = fs.readFileSync(
+            this.snapshotFilePath,
+            "utf-8"
+        );
+
+        if (!fileContent.trim()) {
+            return;
+        }
+
+        // turn JSON into Object
+        const snapshot = JSON.parse(fileContent);
+
+        // turn Object into Map
+        this.storage = new Map(
+            Object.entries(snapshot)
+        );
+    }
+
+    // private method for saving data into snapshot
+    _saveSnapshot() {
+        const snapshot = Object.fromEntries(
+            this.storage
+        );
+
+        fs.writeFileSync(
+            this.snapshotFilePath,
+            JSON.stringify(snapshot, null, 2), 
+            "utf-8"
+        );
     }
 
     // private method for restore data from file
@@ -78,17 +123,16 @@ class DaendelsDB {
 
     // handle the key validation
     _validateKey(key) {
-        const keyType = typeof key;
-
-        if (!ALLOWED_TYPES.includes(keyType)) {
-            throw this._createError (
+        if (typeof key !== "string") {
+            throw this._createError(
                 ERROR.INVALID_KEY_TYPE
-            );    
+            );
         }
-        if (keyType === "string" && !key.trim()){
-            throw this._createError (
+
+        if (!key.trim()) {
+            throw this._createError(
                 ERROR.EMPTY_KEY
-            );    
+            );
         }
     }
 
@@ -96,7 +140,7 @@ class DaendelsDB {
     _validateValue(value) {
         const valueType = typeof value;
 
-        if (!ALLOWED_TYPES.includes(valueType)) {
+        if (!ALLOWED_VALUE_TYPES.includes(valueType)) {
             throw this._createError (
                 ERROR.INVALID_VALUE_TYPE
             );    
@@ -203,6 +247,13 @@ class DaendelsDB {
             logEntries,
             status: "Operational",
         };
+    }
+
+    // SNAPSHOT command (SNAPSHOT)
+    snapshot() {
+        this._saveSnapshot();
+
+        return true;
     }
 }
 module.exports = DaendelsDB;

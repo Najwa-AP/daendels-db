@@ -4,7 +4,7 @@ const ERROR = {
     EMPTY_VALUE:
         "Value must not be empty.",
     INVALID_KEY_TYPE:
-        "Unsupported key type.",
+        "Key type must be string.",
     INVALID_VALUE_TYPE:
         "Unsupported value type.",
     KEY_NOT_FOUND: (key) => 

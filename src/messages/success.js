@@ -7,6 +7,8 @@ const SUCCESS = {
         "Inspection completed.",
     SURVEY:
         "Survey completed.",
+    SNAPSHOT:
+        "Road network successfully archived.",
     STATS:
         "Logistics report generated.",
     EXIT:

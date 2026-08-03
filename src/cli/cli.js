@@ -32,7 +32,7 @@ function startCLI() {
     =====================================
                 DaendelsDB 
     =====================================
-    Version : 0.3
+    Version : 0.6
     Storage : In-Memory + Append Log
 
     Type HELP for available commands.
@@ -68,7 +68,7 @@ function parseValue(value) {
 function executeCommand(command, args, rl) {
     try {
         switch (command) {
-            case "BUILD":
+            case "BUILD": {
                 if (args.length < 3) {
                     console.log(
                         `[Daendels] ${ERROR.INVALID_ARGUMENT}`
@@ -85,7 +85,8 @@ function executeCommand(command, args, rl) {
                     `[Daendels] ${SUCCESS.BUILD(key)}`
                 );
                 return true;
-            case "INSPECT":
+            }
+            case "INSPECT": {
                 if (args.length < 3) {
                     console.log(
                         `[Daendels] ${ERROR.INVALID_ARGUMENT}`
@@ -101,7 +102,8 @@ function executeCommand(command, args, rl) {
                     `[Daendels] ${SUCCESS.INSPECT}`
                 );
                 return true;
-            case "DEMOLISH":
+            }
+            case "DEMOLISH": {
                 if (args.length < 3) {
                     console.log(
                         `[Daendels] ${ERROR.INVALID_ARGUMENT}`
@@ -116,19 +118,31 @@ function executeCommand(command, args, rl) {
                     `[Daendels] ${SUCCESS.DEMOLISH(key)}`
                 );
                 return true;
-            case "SURVEY":
+            }
+            case "SURVEY": {
                 console.table(db.survey());
                 console.log(
                     `[Daendels] ${SUCCESS.SURVEY}`
                 );
                 return true;
-            case "STATS":
+            }
+            case "STATS": {
                 console.table(db.stats());
                 console.log(
                     `[Daendels] ${SUCCESS.STATS}`
                 );
                 return true;
-            case "HELP":
+            }
+            case "SNAPSHOT": {
+                db.snapshot();
+
+                console.log(
+                    `[Daendels] ${SUCCESS.SNAPSHOT}`
+                );
+
+                return true;
+            }
+            case "HELP": {
                 console.log(`
                     Available Commands
 
@@ -141,17 +155,20 @@ function executeCommand(command, args, rl) {
                     EXIT
                 `);
                 return true;
-            case "EXIT":
+            }
+            case "EXIT": {
                 console.log(
                     `[Daendels] ${SUCCESS.EXIT}`
                 );
                 rl.close();
                 return false;
-            default:
+            }
+            default: {
                 console.log(
                     `[Daendels] ${ERROR.INVALID_ARGUMENT}`
                 );
                 return true;
+            }
         }
     } catch(err){
         console.error(err.message);
