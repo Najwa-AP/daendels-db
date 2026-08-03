@@ -137,9 +137,9 @@ This architecture is inspired by append-only storage engines used in databases s
 
 ### Version 0.5
 
-- ⏳ Key validation
-- ⏳ Value type validation
-- ⏳ Multiple value types
+- ✅ Key validation
+- ✅ Value type validation
+- ✅ Multiple value types
 
 ### Version 0.6
 
