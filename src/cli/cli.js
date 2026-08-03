@@ -43,6 +43,28 @@ function startCLI() {
     rl.prompt();
 }
 
+function parseValue(value) {
+    const input = Number(value);
+
+    if (!Number.isNaN(input)) {
+        return input;
+    } 
+
+    if (value === "true") {
+        return true;
+    } 
+    
+    if (value === "false") {
+        return false;
+    } 
+    
+    if (value === "null") {
+        return null;
+    } 
+
+    return value;
+}
+
 function executeCommand(command, args, rl) {
     try {
         switch (command) {
@@ -53,9 +75,14 @@ function executeCommand(command, args, rl) {
                     );
                     return true;
                 }
-                db.build(args[1], args[2]);
+
+                const key = args[1];
+                const value = parseValue(args[2]);
+
+                db.build(key, value);
+
                 console.log(
-                    `[Daendels] ${SUCCESS.BUILD(args[1])}`
+                    `[Daendels] ${SUCCESS.BUILD(key)}`
                 );
                 return true;
             case "INSPECT":
@@ -65,7 +92,11 @@ function executeCommand(command, args, rl) {
                     );
                     return true;
                 }
-                console.log(db.inspect(args[1]));
+
+                const key = args[1];
+
+                console.log(db.inspect(key));
+
                 console.log(
                     `[Daendels] ${SUCCESS.INSPECT}`
                 );
@@ -77,9 +108,12 @@ function executeCommand(command, args, rl) {
                     );
                     return true;
                 }
-                db.demolish(args[1]);
+
+                const key = args[1];
+
+                db.demolish(key);
                 console.log(
-                    `[Daendels] ${SUCCESS.DEMOLISH(args[1])}`
+                    `[Daendels] ${SUCCESS.DEMOLISH(key)}`
                 );
                 return true;
             case "SURVEY":
