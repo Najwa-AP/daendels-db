@@ -9,6 +9,8 @@ const SUCCESS = {
         "Survey completed.",
     SNAPSHOT:
         "Road network successfully archived.",
+    COMPACT:
+        "Logistics report successfully compacted.",
     REPORT:
         "Logistics report generated.",
     EXIT:

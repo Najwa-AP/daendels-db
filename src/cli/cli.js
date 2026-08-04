@@ -142,6 +142,15 @@ function executeCommand(command, args, rl) {
 
                 return true;
             }
+            case "COMPACT": {
+                db.compact();
+
+                console.log(
+                    `[Daendels] ${SUCCESS.COMPACT}`
+                );
+
+                return true;
+            }
             case "HELP": {
                 console.log(`
                     Available Commands
@@ -151,6 +160,8 @@ function executeCommand(command, args, rl) {
                     DEMOLISH <key>
                     SURVEY
                     REPORT
+                    SNAPSHOT
+                    COMPACT
                     HELP
                     EXIT
                 `);
