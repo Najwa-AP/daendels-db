@@ -9,7 +9,7 @@ const SUCCESS = {
         "Survey completed.",
     SNAPSHOT:
         "Road network successfully archived.",
-    STATS:
+    REPORT:
         "Logistics report generated.",
     EXIT:
         "Shutting down database engine..."

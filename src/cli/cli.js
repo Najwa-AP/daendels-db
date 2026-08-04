@@ -126,10 +126,10 @@ function executeCommand(command, args, rl) {
                 );
                 return true;
             }
-            case "STATS": {
-                console.table(db.stats());
+            case "REPORT": {
+                console.table(db.report());
                 console.log(
-                    `[Daendels] ${SUCCESS.STATS}`
+                    `[Daendels] ${SUCCESS.REPORT}`
                 );
                 return true;
             }
@@ -150,7 +150,7 @@ function executeCommand(command, args, rl) {
                     INSPECT <key>
                     DEMOLISH <key>
                     SURVEY
-                    STATS
+                    REPORT
                     HELP
                     EXIT
                 `);

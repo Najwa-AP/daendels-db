@@ -121,6 +121,11 @@ class DaendelsDB {
         );
     }
 
+    // clearing the content inside daendels.log file
+    _clearLog() {
+        fs.writeFileSync(this.logFilePath, "", "utf-8");
+    }
+
     // handle the key validation
     _validateKey(key) {
         if (typeof key !== "string") {
@@ -220,8 +225,8 @@ class DaendelsDB {
         return Array.from(this.storage.entries());
     }
 
-    // STATS command (STATUS)
-    stats() {
+    // REPORT command (STATS)
+    report() {
         // records
         const records = this.storage.size;
         // log file name
@@ -252,6 +257,15 @@ class DaendelsDB {
     // SNAPSHOT command (SNAPSHOT)
     snapshot() {
         this._saveSnapshot();
+
+        return true;
+    }
+
+    // COMPACT command (COMPACT LOG)
+    compact() {
+        this._saveSnapshot();
+
+        this._clearLog();
 
         return true;
     }
