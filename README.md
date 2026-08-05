@@ -21,18 +21,11 @@ The project emphasizes clean architecture, modular design, and database internal
 - In-Memory storage using JavaScript `Map`
 - Append-only log persistence
 - Snapshot persistence
+- Compact log support
 - Automatic recovery from snapshot and append log
 - Primitive value parser
 - Input validation layer
 - Modular message system
-
-### Database Commands
-
-- BUILD (Insert / Update)
-- INSPECT (Read)
-- DEMOLISH (Delete)
-- SURVEY (List all records)
-- STATS (Database statistics)
 
 ### Interactive CLI
 
@@ -70,10 +63,10 @@ DaendelsDB Engine
  │      ▼
  │  snapshot.json
  │
- └── Append Log
+ └── Append Log Manager
         │
         ▼
-   daendels.log
+    daendels.log
 ```
 
 ---
@@ -112,10 +105,11 @@ daendels-db/
 | INSPECT `<key>` | Retrieve a value |
 | DEMOLISH `<key>` | Delete a record |
 | SURVEY | Display all stored records |
-| STATS | Show database statistics |
+| REPORT | Show database statistics |
 | SNAPSHOT | Save current database state |
 | HELP | Show available commands |
 | EXIT | Close DaendelsDB |
+| COMPACT | Save snapshot and clear append log |
 
 ---
 
