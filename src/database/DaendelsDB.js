@@ -53,16 +53,23 @@ class DaendelsDB {
         const snapshot = JSON.parse(fileContent);
 
         // turn Object into Map
-        this.storage = new Map(
-            Object.entries(snapshot)
-        );
+        this.storage = new Map();
+
+        for (const [name, collection] of Object.entries(snapshot)) {
+            this.storage.set(
+                name,
+                new Map(Object.entries(collection))
+            );
+        }
     }
 
     // private method for saving data into snapshot
     _saveSnapshot() {
-        const snapshot = Object.fromEntries(
-            this.storage
-        );
+        const snapshot = {};
+
+        for (const [name, collection] of this.storage.entries()) {
+            snapshot[name] = Object.fromEntries(collection);
+        }
 
         fs.writeFileSync(
             this.snapshotFilePath,

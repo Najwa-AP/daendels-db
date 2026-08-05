@@ -156,11 +156,14 @@ daendels-db/
 
 - ✅ CLI parser
 - ✅ Snapshot
-- ⏳ Compact Log
+- ✅ Compact Log
 
 ### Version 0.7
 
-- ⏳ Collections
+- ✅ Collection Abstraction
+- ✅ Snapshot serialization
+- ⏳ Append log with collection
+- ⏳ CLI collection commands
 - ⏳ Namespaces
 
 ### Version 0.8
