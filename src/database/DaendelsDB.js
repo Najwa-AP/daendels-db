@@ -20,7 +20,11 @@ class DaendelsDB {
         filepath = "daendels.log",
         snapshotFilePath = "snapshot.json"
     ) {
-        this.storage = new Map(); // store data in RAM
+        this.storage = new Map();
+        this.storage.set(
+            "default",
+            new Map()
+        );
 
         this.logFilePath = path.resolve(filepath);
         this.snapshotFilePath = path.resolve(snapshotFilePath);
@@ -79,15 +83,17 @@ class DaendelsDB {
         const fileContent = fs.readFileSync(this.logFilePath, "utf-8");
         const lines = fileContent.split(/\r?\n/);
 
+        const collection = this._getCollection();
+
         for (const line of lines) {
             if (!line.trim()) continue; // ignoring empty lines
             
             try {
                 const entry = JSON.parse(line);
                 if (entry.action === ACTIONS.BUILD) {
-                    this.storage.set(entry.key, entry.value);
+                    collection.set(entry.key, entry.value);
                 } else if (entry.action === ACTIONS.DEMOLISH) {
-                    this.storage.delete(entry.key);
+                    collection.delete(entry.key);
                 }
             } catch (err) {
                 console.warn(
@@ -168,7 +174,9 @@ class DaendelsDB {
     _validateInspect(key) { 
         this._validateKey(key);
 
-        if (!this.storage.has(key)) {
+        const collection = this._getCollection();
+
+        if (!collection.has(key)) {
             throw this._createError (
                 ERROR.KEY_NOT_FOUND(key)
             );
@@ -179,11 +187,22 @@ class DaendelsDB {
     _validateDemolish(key) { 
         this._validateKey(key);
 
-        if (!this.storage.has(key)) {
+        const collection = this._getCollection();
+
+        if (!collection.has(key)) {
             throw this._createError (
                 ERROR.KEY_NOT_FOUND(key)
             );
         }
+    }
+    
+    // for get a collection
+    _getCollection(name = "default") {
+        if (!this.storage.has(name)) {
+            this.storage.set(name, new Map());
+        }
+
+        return this.storage.get(name);
     }
 
     // BUILD command (SET)
@@ -192,7 +211,8 @@ class DaendelsDB {
         this._validateBuild(key, value);
 
         // save to RAM
-        this.storage.set(key, value);
+        const collection = this._getCollection();
+        collection.set(key, value);
 
         // write to disk (append-only)
         this._appendLog(ACTIONS.BUILD, key, value);
@@ -204,7 +224,8 @@ class DaendelsDB {
     inspect(key) {
         this._validateInspect(key);
 
-        return this.storage.get(key);
+        const collection = this._getCollection();
+        return collection.get(key);
     }
 
     // DEMOLISH command (DELETE)
@@ -215,20 +236,23 @@ class DaendelsDB {
         // write to disk (append-only)
         this._appendLog(ACTIONS.DEMOLISH, key);
 
-        this.storage.delete(key);
+        const collection = this._getCollection();
+        collection.delete(key);
             
         return true;
     }
 
     // SURVEY command (LIST)
     survey(key) {
-        return Array.from(this.storage.entries());
+        const collection = this._getCollection();
+        return Array.from(collection.entries());
     }
 
     // REPORT command (STATS)
     report() {
         // records
-        const records = this.storage.size;
+        const collection = this._getCollection();
+        const records = collection.size;
         // log file name
         const logFile = path.basename(this.logFilePath);
         // log file size
