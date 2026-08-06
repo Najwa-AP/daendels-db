@@ -31,6 +31,8 @@ class DaendelsDB {
         
         this._loadSnapshot();
         this._loadFromDisk();
+
+        this.currentCollection = "default";
     }
 
     // private method for restore data from snapshot
@@ -97,6 +99,8 @@ class DaendelsDB {
             
             try {
                 const entry = JSON.parse(line);
+                const collection = this._getCollection(entry.collection);
+                
                 if (entry.action === ACTIONS.BUILD) {
                     collection.set(entry.key, entry.value);
                 } else if (entry.action === ACTIONS.DEMOLISH) {
@@ -111,9 +115,10 @@ class DaendelsDB {
     }
 
     // private method for write data to file
-    _appendLog(action, key, value) { 
+    _appendLog(action, collection, key, value) { 
         const entry = {
             action,
+            collection,
             key,
             timestamp: new Date().toISOString(),
         };
@@ -218,11 +223,13 @@ class DaendelsDB {
         this._validateBuild(key, value);
 
         // save to RAM
-        const collection = this._getCollection();
-        collection.set(key, value);
+        const collectionName = "default";
 
+        const collection = this._getCollection(collectionName);
+        collection.set(key, value);
+        
         // write to disk (append-only)
-        this._appendLog(ACTIONS.BUILD, key, value);
+        this._appendLog(ACTIONS.BUILD, collectionName, key, value);
 
         return true;
     }
@@ -241,9 +248,11 @@ class DaendelsDB {
         this._validateDemolish(key);
 
         // write to disk (append-only)
-        this._appendLog(ACTIONS.DEMOLISH, key);
+        const collectionName = "default";
 
-        const collection = this._getCollection();
+        this._appendLog(ACTIONS.DEMOLISH, collectionName, key);
+
+        const collection = this._getCollection(collectionName);
         collection.delete(key);
             
         return true;
