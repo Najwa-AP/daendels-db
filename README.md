@@ -14,35 +14,48 @@ The project emphasizes clean architecture, modular design, and database internal
 
 ---
 
+## Project Status
+
+Current Version: **v0.7 (In Development)**
+
+Implemented:
+- Append-only storage engine
+- Snapshot recovery
+- Collection abstraction
+- Interactive CLI
+
+Currently working on:
+- Namespaces
+
+---
+
 ## Features
 
 ### Core Engine
 
 - In-Memory storage using JavaScript `Map`
+- Collection-based storage abstraction
 - Append-only log persistence
 - Snapshot persistence
 - Compact log support
 - Automatic recovery from snapshot and append log
+- Collection-aware append log
 - Primitive value parser
 - Input validation layer
 - Modular message system
 
-### Interactive CLI
+### Storage Files
 
-- Interactive command prompt
-- HELP command
-- EXIT command
-
-## Storage Files
-
-DaendelsDB persists data using two storage files.
+DaendelsDB uses a hybrid persistence strategy.
 
 | File | Purpose |
 |------|---------|
-| daendels.log | Append-only operation log |
-| snapshot.json | Snapshot of the latest database state |
+| daendels.log | Append-only operation log for durability |
+| snapshot.json | Serialized collections used for fast startup recovery |
 
-### Current Architecture
+---
+
+## Architecture Diagram
 
 ```text
 CLI
@@ -56,6 +69,8 @@ Validation Layer
  ▼
 DaendelsDB Engine
  │
+ ├── Collection Manager
+ |
  ├── In-Memory Map
  │
  ├── Snapshot Manager
@@ -84,10 +99,10 @@ daendels-db/
 │
 └── src
     ├── cli
-    │   └── cli.js
+    │   └── cli.js   # Interactive command line interface
     │
     ├── database
-    │   └── DaendelsDB.js
+    │   └── DaendelsDB.js   # Core database engine
     │
     └── messages
         ├── error.js
@@ -106,10 +121,12 @@ daendels-db/
 | DEMOLISH `<key>` | Delete a record |
 | SURVEY | Display all stored records |
 | REPORT | Show database statistics |
+| USE <collection> | Switch active collection |
+| COLLECTIONS | List all collections |
 | SNAPSHOT | Save current database state |
+| COMPACT | Save snapshot and clear append log |
 | HELP | Show available commands |
 | EXIT | Close DaendelsDB |
-| COMPACT | Save snapshot and clear append log |
 
 ---
 
@@ -202,12 +219,6 @@ daendels-db/
 - readline
 
 No external dependencies are used.
-
----
-
-## Inspiration
-
-This project is inspired by the logistics and infrastructure built during the administration of **Herman Willem Daendels**, particularly the concept of the **Great Post Road (Jalan Raya Pos)** as an analogy for an append-only persistence mechanism.
 
 ---
 
