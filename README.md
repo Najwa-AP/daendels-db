@@ -156,8 +156,8 @@ daendels-db/
 
 - ✅ Collection Abstraction
 - ✅ Snapshot serialization
-- ⏳ Append log with collection
-- ⏳ CLI collection commands
+- ✅ Append log with collection
+- ✅ CLI collection commands
 - ⏳ Namespaces
 
 ### Version 0.8

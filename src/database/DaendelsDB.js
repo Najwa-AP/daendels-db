@@ -26,13 +26,13 @@ class DaendelsDB {
             new Map()
         );
 
+        this.currentCollection = "default";
+
         this.logFilePath = path.resolve(filepath);
         this.snapshotFilePath = path.resolve(snapshotFilePath);
         
         this._loadSnapshot();
         this._loadFromDisk();
-
-        this.currentCollection = "default";
     }
 
     // private method for restore data from snapshot
@@ -217,19 +217,22 @@ class DaendelsDB {
         return this.storage.get(name);
     }
 
+    // for get a current/newwest collection
+    _getCurrentCollection() {
+        return this._getCollection(this.currentCollection);
+    }
+
     // BUILD command (SET)
     build(key, value) {
         // validate input
         this._validateBuild(key, value);
 
         // save to RAM
-        const collectionName = "default";
-
-        const collection = this._getCollection(collectionName);
+        const collection = this._getCurrentCollection();
         collection.set(key, value);
         
         // write to disk (append-only)
-        this._appendLog(ACTIONS.BUILD, collectionName, key, value);
+        this._appendLog(ACTIONS.BUILD, this.currentCollection, key, value);
 
         return true;
     }
@@ -238,7 +241,7 @@ class DaendelsDB {
     inspect(key) {
         this._validateInspect(key);
 
-        const collection = this._getCollection();
+        const collection = this._getCurrentCollection();
         return collection.get(key);
     }
 
@@ -248,11 +251,9 @@ class DaendelsDB {
         this._validateDemolish(key);
 
         // write to disk (append-only)
-        const collectionName = "default";
+        this._appendLog(ACTIONS.DEMOLISH, this.currentCollection, key);
 
-        this._appendLog(ACTIONS.DEMOLISH, collectionName, key);
-
-        const collection = this._getCollection(collectionName);
+        const collection = this._getCurrentCollection();
         collection.delete(key);
             
         return true;
@@ -260,7 +261,7 @@ class DaendelsDB {
 
     // SURVEY command (LIST)
     survey(key) {
-        const collection = this._getCollection();
+        const collection = this._getCurrentCollection();
         return Array.from(collection.entries());
     }
 
@@ -308,6 +309,22 @@ class DaendelsDB {
         this._clearLog();
 
         return true;
+    }
+
+    // USE COLLECTION (to let users use collection they want)
+    useCollection(name) {
+        this._validateKey(name);
+
+        this.currentCollection = name;
+
+        this._getCollection(name);
+
+        return true;
+    }
+
+    // LIST COLLECTION (to show users all collection that's exist)
+    listCollections() {
+        return Array.from(this.storage.keys());
     }
 }
 module.exports = DaendelsDB;

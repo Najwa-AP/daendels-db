@@ -133,6 +133,17 @@ function executeCommand(command, args, rl) {
                 );
                 return true;
             }
+            case "USE": {
+                db.useCollection(args[1]);
+                console.log(
+                    `[Daendels] Active collection: '${args[1]}'.`
+                );
+                return true;
+            }
+            case "COLLECTIONS": {
+                console.table(db.listCollections());
+                return true;
+            }
             case "SNAPSHOT": {
                 db.snapshot();
 
@@ -160,6 +171,8 @@ function executeCommand(command, args, rl) {
                     DEMOLISH <key>
                     SURVEY
                     REPORT
+                    USE <collection>
+                    COLLECTIONS
                     SNAPSHOT
                     COMPACT
                     HELP
