@@ -92,8 +92,6 @@ class DaendelsDB {
         const fileContent = fs.readFileSync(this.logFilePath, "utf-8");
         const lines = fileContent.split(/\r?\n/);
 
-        const collection = this._getCollection();
-
         for (const line of lines) {
             if (!line.trim()) continue; // ignoring empty lines
             
@@ -186,7 +184,7 @@ class DaendelsDB {
     _validateInspect(key) { 
         this._validateKey(key);
 
-        const collection = this._getCollection();
+        const collection = this._getCurrentCollection();
 
         if (!collection.has(key)) {
             throw this._createError (
@@ -199,7 +197,7 @@ class DaendelsDB {
     _validateDemolish(key) { 
         this._validateKey(key);
 
-        const collection = this._getCollection();
+        const collection = this._getCurrentCollection();
 
         if (!collection.has(key)) {
             throw this._createError (
@@ -217,7 +215,7 @@ class DaendelsDB {
         return this.storage.get(name);
     }
 
-    // for get a current/newwest collection
+    // for get a current/newest collection
     _getCurrentCollection() {
         return this._getCollection(this.currentCollection);
     }
@@ -260,7 +258,7 @@ class DaendelsDB {
     }
 
     // SURVEY command (LIST)
-    survey(key) {
+    survey() {
         const collection = this._getCurrentCollection();
         return Array.from(collection.entries());
     }
@@ -268,8 +266,14 @@ class DaendelsDB {
     // REPORT command (STATS)
     report() {
         // records
-        const collection = this._getCollection();
-        const records = collection.size;
+        const currentCollection = this._getCurrentCollection();
+        const totalCollections = this.storage.size;
+        let totalRecords = 0;
+
+        for (const storedCollection of this.storage.values()) {
+            totalRecords += storedCollection.size;
+            
+        }
         // log file name
         const logFile = path.basename(this.logFilePath);
         // log file size
@@ -287,10 +291,19 @@ class DaendelsDB {
         return {
             database: "DaendelsDB",
             engine: "In-Memory + Append Log",
-            records,
+
+            currentCollection: this.currentCollection,
+
+            currentCollectionRecords: currentCollection.size,
+
+            collections: totalCollections,
+
+            totalRecords,
+
             logFile,
             logSize,
             logEntries,
+
             status: "Operational",
         };
     }
@@ -321,10 +334,13 @@ class DaendelsDB {
 
         return true;
     }
-
+ 
     // LIST COLLECTION (to show users all collection that's exist)
     listCollections() {
-        return Array.from(this.storage.keys());
+        return Array.from(this.storage.keys()).map(
+            name => ({
+                collection: name
+            }));
     }
 }
 module.exports = DaendelsDB;
