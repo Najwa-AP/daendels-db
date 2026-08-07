@@ -175,7 +175,7 @@ daendels-db/
 - ✅ Snapshot serialization
 - ✅ Append log with collection
 - ✅ CLI collection commands
-- ⏳ Namespaces
+- ✅ Namespaces
 
 ### Version 0.8
 
