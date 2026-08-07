@@ -1,4 +1,0 @@
-
-{"action":"BUILD","collection":"default","key":"my","timestamp":"2026-08-06T09:00:39.062Z","value":"daendels"}
-{"action":"BUILD","collection":"default","key":"city","timestamp":"2026-08-06T10:07:12.483Z","value":"batavia"}
-{"action":"BUILD","collection":"users","key":"alice","timestamp":"2026-08-06T10:07:21.431Z","value":"admin"}

@@ -21,11 +21,8 @@ class DaendelsDB {
         snapshotFilePath = "snapshot.json"
     ) {
         this.storage = new Map();
-        this.storage.set(
-            "default",
-            new Map()
-        );
 
+        this.currentNamespace = "default";
         this.currentCollection = "default";
 
         this.logFilePath = path.resolve(filepath);
@@ -33,11 +30,12 @@ class DaendelsDB {
         
         this._loadSnapshot();
         this._loadFromDisk();
+        
+        this._getCurrentCollection();
     }
 
     // private method for restore data from snapshot
     _loadSnapshot() {
-        // check if the snapshot file is exist
         if (!fs.existsSync(this.snapshotFilePath)) {
             return;
         }
@@ -57,11 +55,16 @@ class DaendelsDB {
         // turn Object into Map
         this.storage = new Map();
 
-        for (const [name, collection] of Object.entries(snapshot)) {
-            this.storage.set(
-                name,
-                new Map(Object.entries(collection))
-            );
+        for (const [namespaceName, namespace] of Object.entries(snapshot)) {
+            const namespaceMap = new Map();
+
+            for (const [collectionName, collection] of Object.entries(namespace)) {
+                namespaceMap.set(
+                    collectionName,
+                    new Map(Object.entries(collection))
+                );
+            }
+            this.storage.set(namespaceName, namespaceMap);
         }
     }
 
@@ -69,8 +72,13 @@ class DaendelsDB {
     _saveSnapshot() {
         const snapshot = {};
 
-        for (const [name, collection] of this.storage.entries()) {
-            snapshot[name] = Object.fromEntries(collection);
+        for (const [namespaceName, namespace] of this.storage.entries()) {
+            snapshot[namespaceName] = {};
+
+            for (const [collectionName, collection] of namespace.entries()) {
+                snapshot[namespaceName][collectionName] = 
+                    Object.fromEntries(collection);
+            }
         }
 
         fs.writeFileSync(
@@ -80,7 +88,7 @@ class DaendelsDB {
         );
     }
 
-    // private method for restore data from file
+    // for restore data from file
     _loadFromDisk() {
         if (!fs.existsSync(this.logFilePath)) {
             // if not exist, create one
@@ -97,7 +105,10 @@ class DaendelsDB {
             
             try {
                 const entry = JSON.parse(line);
-                const collection = this._getCollection(entry.collection);
+                const collection = this._getCollection(
+                    entry.namespace,
+                    entry.collection
+                );
                 
                 if (entry.action === ACTIONS.BUILD) {
                     collection.set(entry.key, entry.value);
@@ -113,9 +124,16 @@ class DaendelsDB {
     }
 
     // private method for write data to file
-    _appendLog(action, collection, key, value) { 
+    _appendLog(
+        action, 
+        namespace, 
+        collection, 
+        key, 
+        value
+    ) { 
         const entry = {
             action,
+            namespace,
             collection,
             key,
             timestamp: new Date().toISOString(),
@@ -207,17 +225,33 @@ class DaendelsDB {
     }
     
     // for get a collection
-    _getCollection(name = "default") {
-        if (!this.storage.has(name)) {
-            this.storage.set(name, new Map());
+    _getCollection(
+        namespace = this.currentNamespace,
+        collection = this.currentCollection
+    ) {
+        const currentNamespace = this._getNamespace(namespace);
+        
+        if (!currentNamespace.has(collection)) {
+            currentNamespace.set(collection, new Map());
         }
 
+        return currentNamespace.get(collection);
+    }
+
+    // getting a namespace
+    _getNamespace(name = "default") {
+        if(!this.storage.has(name)) {
+            this.storage.set(name, new Map());
+        }
         return this.storage.get(name);
     }
 
-    // for get a current/newest collection
+    // for getting a current/newest collection
     _getCurrentCollection() {
-        return this._getCollection(this.currentCollection);
+        return this._getCollection(
+            this.currentNamespace,
+            this.currentCollection
+        );
     }
 
     // BUILD command (SET)
@@ -230,8 +264,13 @@ class DaendelsDB {
         collection.set(key, value);
         
         // write to disk (append-only)
-        this._appendLog(ACTIONS.BUILD, this.currentCollection, key, value);
-
+        this._appendLog(
+            ACTIONS.BUILD, 
+            this.currentNamespace,
+            this.currentCollection, 
+            key, 
+            value
+        );
         return true;
     }
 
@@ -249,8 +288,12 @@ class DaendelsDB {
         this._validateDemolish(key);
 
         // write to disk (append-only)
-        this._appendLog(ACTIONS.DEMOLISH, this.currentCollection, key);
-
+        this._appendLog(
+            ACTIONS.DEMOLISH, 
+            this.currentNamespace,
+            this.currentCollection, 
+            key
+        );
         const collection = this._getCurrentCollection();
         collection.delete(key);
             
@@ -266,14 +309,24 @@ class DaendelsDB {
     // REPORT command (STATS)
     report() {
         // records
-        const currentCollection = this._getCurrentCollection();
-        const totalCollections = this.storage.size;
-        let totalRecords = 0;
+        const totalNamespaces = this.storage.size;
+        let totalCollections = 0;
 
-        for (const storedCollection of this.storage.values()) {
-            totalRecords += storedCollection.size;
+        for (const namespace of this.storage.values()) {
+            totalCollections += namespace.size;
             
         }
+
+        let totalRecords = 0;
+
+        for (const namespace of this.storage.values()) {
+            for (const collection of namespace.values()) {
+                totalRecords += collection.size;
+            }
+        }
+
+        const currentCollection = this._getCurrentCollection();
+        
         // log file name
         const logFile = path.basename(this.logFilePath);
         // log file size
@@ -290,20 +343,17 @@ class DaendelsDB {
 
         return {
             database: "DaendelsDB",
-            engine: "In-Memory + Append Log",
-
+            version: "0.7",
+            engine: "In-Memory + Snapshot + Append Log",
+            currentNamespace: this.currentNamespace,
             currentCollection: this.currentCollection,
-
             currentCollectionRecords: currentCollection.size,
-
+            namespaces: totalNamespaces,
             collections: totalCollections,
-
             totalRecords,
-
             logFile,
             logSize,
             logEntries,
-
             status: "Operational",
         };
     }
@@ -328,19 +378,33 @@ class DaendelsDB {
     useCollection(name) {
         this._validateKey(name);
 
-        this.currentCollection = name;
+        this._getCollection(this.currentNamespace, name);
 
-        this._getCollection(name);
+        this.currentCollection = name;
 
         return true;
     }
  
     // LIST COLLECTION (to show users all collection that's exist)
     listCollections() {
-        return Array.from(this.storage.keys()).map(
-            name => ({
-                collection: name
-            }));
+        const namespace = this._getNamespace(this.currentNamespace);
+        return Array.from(namespace.keys());
+    }
+
+    //USE NAMESPACE (to let the user choose namespaces they want)
+    useNamespace(name) {
+        this._validateKey(name);
+
+        this._getNamespace(name);
+
+        this.currentNamespace = name;
+
+        return true;
+    }
+
+    // LIST NAMESPACE (to show users all namespaces that's exist)
+    listNamespaces() {
+        return Array.from(this.storage.keys());
     }
 }
 module.exports = DaendelsDB;
