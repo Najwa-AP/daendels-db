@@ -133,7 +133,18 @@ function executeCommand(command, args, rl) {
                 );
                 return true;
             }
-            case "USE": {
+            case "USE_NAMESPACE": {
+                db.useNamespace(args[1]);
+                console.log(
+                    `[Daendels] Active namespace: '${args[1]}'.`
+                );
+                return true;
+            }
+            case "NAMESPACES": {
+                console.table(db.listNamespaces());
+                return true;
+            }
+            case "USE_COLLECTION": {
                 db.useCollection(args[1]);
                 console.log(
                     `[Daendels] Active collection: '${args[1]}'.`
@@ -171,7 +182,9 @@ function executeCommand(command, args, rl) {
                     DEMOLISH <key>
                     SURVEY
                     REPORT
-                    USE <collection>
+                    USE_NAMESPACE <name>
+                    NAMESPACES
+                    USE_COLLECTION <collection>
                     COLLECTIONS
                     SNAPSHOT
                     COMPACT
