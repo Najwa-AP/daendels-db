@@ -12,7 +12,9 @@ const ERROR = {
     UNKNOWN_COMMAND:
         "Unknown command.",
     INVALID_ARGUMENT:
-        "Invalid command arguments."
+        "Invalid command arguments.",
+    INVALID_OPERATOR:
+        "Invalid operator arguments."
 };
 
 module.exports = ERROR

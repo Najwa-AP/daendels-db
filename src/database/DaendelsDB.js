@@ -254,6 +254,26 @@ class DaendelsDB {
         );
     }
 
+    // for comparing input with data fol filtering
+    _reconCompare(actual, operator, expected) {
+        switch (operator) {
+            case "=":
+                return actual === expected;
+            case "!=":
+                return actual !== expected;
+            case ">":
+                return actual > expected;
+            case "<":
+                return actual < expected;
+            case ">=":
+                return actual >= expected;
+            case "<=":
+                return actual <= expected;
+            default:
+                throw this._createError(ERROR.INVALID_OPERATOR);
+        }
+    }
+
     // BUILD command (SET)
     build(key, value) {
         // validate input
@@ -405,6 +425,25 @@ class DaendelsDB {
     // LIST NAMESPACE (to show users all namespaces that's exist)
     listNamespaces() {
         return Array.from(this.storage.keys());
+    }
+
+    // RECON command (FILTER)
+    recon(key, operator, expectedValue) {
+        const collection = this._getCurrentCollection();
+
+        return Array.from(collection.entries())
+            .filter(([entryKey, entryValue]) => {
+                if (entryKey !== key) {
+                    return false;
+                }
+
+                return this._reconCompare(
+                    entryValue, 
+                    operator, 
+                    expectedValue
+                );
+            }
+        );
     }
 }
 module.exports = DaendelsDB;

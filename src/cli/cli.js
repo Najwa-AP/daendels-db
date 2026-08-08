@@ -33,7 +33,7 @@ function startCLI() {
                 DaendelsDB 
     =====================================
     Version : 0.7
-    Storage : In-Memory + Append Log
+    Storage : In-Memory + Snapshot + Append Log
 
     Type HELP for available commands.
     =====================================
@@ -126,6 +126,24 @@ function executeCommand(command, args, rl) {
                 );
                 return true;
             }
+            case "RECON": {
+                if (args.length < 4) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
+
+                const key = args[1];
+                const operator = args[2];
+                const value = parseValue(args[3]);
+
+                console.table(db.recon(key, operator, value));
+                console.log(
+                    `[Daendels] ${SUCCESS.RECON}`
+                );
+                return true;
+            }
             case "REPORT": {
                 console.table(db.report());
                 console.log(
@@ -181,6 +199,7 @@ function executeCommand(command, args, rl) {
                     INSPECT <key>
                     DEMOLISH <key>
                     SURVEY
+                    RECON <field> <operator> <value>
                     REPORT
                     USE_NAMESPACE <name>
                     NAMESPACES
