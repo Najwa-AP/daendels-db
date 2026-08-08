@@ -8,24 +8,11 @@ The project is inspired by **Herman Willem Daendels** and the historic **Great P
 
 ## Why DaendelsDB?
 
-DaendelsDB was built as a software engineering learning project to understand how database engines work internally. Instead of relying on existing databases, every storage mechanism—including append-only logging, snapshot persistence, startup recovery, and command processing—is implemented from scratch using only Node.js built-in modules.
+DaendelsDB was built as a software engineering learning project to understand how database engines work internally. 
+
+Instead of relying on existing databases, every storage mechanism—including append-only logging, snapshot persistence, startup recovery, and command processing—is implemented from scratch using only Node.js built-in modules.
 
 The project emphasizes clean architecture, modular design, and database internals rather than production-ready performance.
-
----
-
-## Project Status
-
-Current Version: **v0.7 (In Development)**
-
-Implemented:
-- Append-only storage engine
-- Snapshot recovery
-- Collection abstraction
-- Interactive CLI
-
-Currently working on:
-- Namespaces
 
 ---
 
@@ -35,18 +22,37 @@ Currently working on:
 
 - In-Memory storage using JavaScript `Map`
 - Collection-based storage abstraction
+- Namespace-based storage organization
 - Append-only log persistence
+- Collection- and namespace-aware append logs
 - Snapshot persistence
-- Compact log support
-- Automatic recovery from snapshot and append log
-- Collection-aware append log
+- Snapshot-based startup recovery
+- Append-log recovery
+- Log compaction
 - Primitive value parser
 - Input validation layer
+- Query filtering
 - Modular message system
 
-### Storage Files
+### Persistence
 
-DaendelsDB uses a hybrid persistence strategy.
+DaendelsDB uses a hybrid persistence strategy:
+
+In-Memory Map
+     │
+     ├── Snapshot
+     │      ↓
+     │  snapshot.json
+     │
+     └── Append-Only Log
+            ↓
+        daendels.log
+
+Snapshots provide a serialized representation of the current database state, while the append-only log records subsequent database operations.
+
+---
+
+## Storage Files
 
 | File | Purpose |
 |------|---------|
@@ -55,7 +61,7 @@ DaendelsDB uses a hybrid persistence strategy.
 
 ---
 
-## Architecture Diagram
+## Architecture
 
 ```text
 CLI
@@ -69,9 +75,13 @@ Validation Layer
  ▼
 DaendelsDB Engine
  │
- ├── Collection Manager
+ ├── Namespace Manager 
+ │    │
+ │    └── Collection Manager
+ │         │
+ │         └── In-Memory Map
  |
- ├── In-Memory Map
+ ├── Query Engine
  │
  ├── Snapshot Manager
  │      │
@@ -83,6 +93,33 @@ DaendelsDB Engine
         ▼
     daendels.log
 ```
+---
+
+## Data Hierarchy
+
+DaendelsDB organizes data using namespaces and collections:
+
+Namespace
+   │
+   └── Collection
+          │
+          └── Key
+                │
+                └── Value
+
+For example:
+
+military
+ └── forts
+      ├── anyer → west
+      └── batavia → headquarters
+
+economy
+ └── taxes
+      ├── vat → 11
+      └── income → 5000
+
+This provides logical separation between groups of collections and their records.
 
 ---
 
@@ -120,6 +157,7 @@ daendels-db/
 | INSPECT `<key>` | Retrieve a value |
 | DEMOLISH `<key>` | Delete a record |
 | SURVEY | Display all stored records |
+| RECON `<key>` `<operator>` `<value>` | Filter records using a comparison |
 | REPORT | Show database statistics |
 | USE <collection> | Switch active collection |
 | COLLECTIONS | List all collections |
@@ -179,7 +217,7 @@ daendels-db/
 
 ### Version 0.8
 
-- ⏳ Query filtering
+- ✅ Query filtering
 - ⏳ Prefix search
 - ⏳ Collections API
 
@@ -202,23 +240,27 @@ daendels-db/
 
 - Learn database internals
 - Practice clean architecture
-- Separate engine from presentation layer
+- Separate the database engine from the presentation layer
 - Avoid third-party dependencies
-- Build everything using Node.js built-in modules
+- Build core functionality using Node.js built-in modules
 - Understand append-only storage engines
-- Explore database persistence and recovery
+- Explore persistence and recovery mechanisms
+- Understand collections and namespaces
+- Learn basic query processing
+- Maintain a modular and readable codebase
 
 ---
 
-## Built-in Modules
+## Technologies
 
-- JavaScript (Node.js)
+- JavaScript
+- Node.js
 - CommonJS Modules
 - fs
 - path
 - readline
 
-No external dependencies are used.
+No third-party dependencies are used.
 
 ---
 

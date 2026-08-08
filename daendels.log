@@ -1,0 +1,7 @@
+{"action":"BUILD","namespace":"military","collection":"soldiers","key":"age","timestamp":"2026-08-08T02:48:59.494Z","value":20}
+{"action":"BUILD","namespace":"military","collection":"soldiers","key":"score","timestamp":"2026-08-08T02:49:07.446Z","value":85}
+{"action":"BUILD","namespace":"military","collection":"soldiers","key":"active","timestamp":"2026-08-08T02:49:12.557Z","value":true}
+{"action":"BUILD","namespace":"military","collection":"soldiers","key":"name","timestamp":"2026-08-08T02:49:17.613Z","value":"Daendels"}
+{"action":"BUILD","namespace":"economy","collection":"taxes","key":"rate","timestamp":"2026-08-08T03:01:02.116Z","value":10}
+{"action":"BUILD","namespace":"economy","collection":"taxes","key":"active","timestamp":"2026-08-08T03:01:07.306Z","value":true}
+{"action":"BUILD","namespace":"economy","collection":"taxes","key":"name","timestamp":"2026-08-08T03:01:14.366Z","value":"Tax"}
