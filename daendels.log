@@ -5,3 +5,8 @@
 {"action":"BUILD","namespace":"economy","collection":"taxes","key":"rate","timestamp":"2026-08-08T03:01:02.116Z","value":10}
 {"action":"BUILD","namespace":"economy","collection":"taxes","key":"active","timestamp":"2026-08-08T03:01:07.306Z","value":true}
 {"action":"BUILD","namespace":"economy","collection":"taxes","key":"name","timestamp":"2026-08-08T03:01:14.366Z","value":"Tax"}
+{"action":"BUILD","namespace":"default","collection":"default","key":"user:1","timestamp":"2026-08-10T01:58:21.097Z","value":"Naz"}
+{"action":"BUILD","namespace":"default","collection":"default","key":"user:2","timestamp":"2026-08-10T01:58:27.690Z","value":"Herman"}
+{"action":"BUILD","namespace":"default","collection":"default","key":"user:3","timestamp":"2026-08-10T01:58:33.114Z","value":"Daendels"}
+{"action":"BUILD","namespace":"default","collection":"default","key":"post:1","timestamp":"2026-08-10T01:58:38.503Z","value":"Anyer"}
+{"action":"BUILD","namespace":"default","collection":"default","key":"post:2","timestamp":"2026-08-10T01:58:43.605Z","value":"Panarukan"}

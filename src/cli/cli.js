@@ -144,6 +144,21 @@ function executeCommand(command, args, rl) {
                 );
                 return true;
             }
+            case "FIND": {
+                const results = db.find(args[1]);
+
+                console.table(results);
+
+                if (results.length > 0) {
+                    console.log(
+                        `[Daendels] ${SUCCESS.FIND}`
+                    );
+                } else {
+                    console.log(WARNING.NO_MATCHING_RECORDS(args[1]));
+                }
+
+                return true;
+            }
             case "REPORT": {
                 console.table(db.report());
                 console.log(
@@ -200,6 +215,7 @@ function executeCommand(command, args, rl) {
                     DEMOLISH <key>
                     SURVEY
                     RECON <field> <operator> <value>
+                    FIND <prefix>
                     REPORT
                     USE_NAMESPACE <name>
                     NAMESPACES

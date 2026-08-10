@@ -445,5 +445,28 @@ class DaendelsDB {
             }
         );
     }
+
+    // FIND command (Prefix search)
+    find(prefix) {
+        this._validateKey(prefix);
+
+        const results = [];
+
+        for (const [namespaceName, namespace] of this.storage.entries()) {
+            for (const [collectionName, collection] of namespace.entries()) {
+                for (const [key, value] of collection.entries()) {
+                    if (key.startsWith(prefix)) {
+                        results.push({
+                            namespace: namespaceName,
+                            collection: collectionName,
+                            key, 
+                            value,
+                        });
+                    }
+                }
+            }
+        }
+        return results;
+    }
 }
 module.exports = DaendelsDB;
