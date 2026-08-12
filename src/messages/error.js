@@ -14,7 +14,11 @@ const ERROR = {
     INVALID_ARGUMENT:
         "Invalid command arguments.",
     INVALID_OPERATOR:
-        "Invalid operator arguments."
+        "Invalid operator arguments.",
+    COLLECTION_EXISTS: (name) =>
+        `Collection '${name}' already exists.`,
+    COLLECTION_NOT_FOUND: (name) =>
+    `Collection '${name}' not found.`,
 };
 
 module.exports = ERROR

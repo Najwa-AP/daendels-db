@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const ERROR = require("../messages/error");
 const WARNING = require("../messages/warning");
+const { resourceUsage } = require("process");
 
 const ACTIONS = {
     BUILD: "BUILD",
@@ -404,7 +405,49 @@ class DaendelsDB {
 
         return true;
     }
- 
+
+    // CREATE COLLECTION (make a new collection only if its not exist yet)
+    createCollection(name) {
+        this._validateKey(name);
+
+        const namespace = this._getNamespace(this.currentNamespace);
+
+        if (namespace.has(name)) {
+            throw this._createError(ERROR.COLLECTION_EXISTS(name));
+        }
+        namespace.set(name, new Map());
+
+        return true;
+    }
+
+    // HAS COLLECTION (check if the collection already exist or not)
+    hasCollection(name) {
+        this._validateKey(name);
+
+        const namespace = this._getNamespace(this.currentNamespace);
+
+        return namespace.has(name);
+    }
+
+    // DROP COLLECTION (for deleting a collection)
+    dropCollection(name) {
+        this._validateKey(name);
+
+        const namespace = this._getNamespace(this.currentNamespace);
+
+        if (!namespace.has(name)) {
+            throw this._createError(ERROR.COLLECTION_NOT_FOUND(name));
+        }
+
+        if (name === this.currentCollection) {
+            this.currentCollection = "default";
+            this._getCollection();
+        }
+        namespace.delete(name);
+
+        return true;
+    }
+
     // LIST COLLECTION (to show users all collection that's exist)
     listCollections() {
         const namespace = this._getNamespace(this.currentNamespace);

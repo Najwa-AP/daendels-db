@@ -18,7 +18,11 @@ const SUCCESS = {
     REPORT:
         "Logistics report generated.",
     EXIT:
-        "Shutting down database engine..."
+        "Shutting down database engine...",
+    CREATE_COLLECTION: (name) =>
+        `Collection '${name}' has been established.`,
+    DROP_COLLECTION: (name) =>
+        `Collection '${name}' has been demolished.`,
 };
 
 module.exports = SUCCESS

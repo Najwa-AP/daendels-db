@@ -1,6 +1,7 @@
 const readline = require("readline");
 const DaendelsDB = require("../database/DaendelsDB");
 const SUCCESS = require("../messages/success");
+const WARNING = require("../messages/warning");
 const ERROR = require("../messages/error");
 
 const db = new DaendelsDB();
@@ -87,7 +88,7 @@ function executeCommand(command, args, rl) {
                 return true;
             }
             case "INSPECT": {
-                if (args.length < 3) {
+                if (args.length < 2) {
                     console.log(
                         `[Daendels] ${ERROR.INVALID_ARGUMENT}`
                     );
@@ -104,7 +105,7 @@ function executeCommand(command, args, rl) {
                 return true;
             }
             case "DEMOLISH": {
-                if (args.length < 3) {
+                if (args.length < 2) {
                     console.log(
                         `[Daendels] ${ERROR.INVALID_ARGUMENT}`
                     );
@@ -145,11 +146,17 @@ function executeCommand(command, args, rl) {
                 return true;
             }
             case "FIND": {
+                if (args.length < 2) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
+
                 const results = db.find(args[1]);
 
-                console.table(results);
-
                 if (results.length > 0) {
+                    console.table(results);
                     console.log(
                         `[Daendels] ${SUCCESS.FIND}`
                     );
@@ -188,6 +195,54 @@ function executeCommand(command, args, rl) {
                 console.table(db.listCollections());
                 return true;
             }
+            case "CREATE_COLLECTION": {
+                if (args.length < 2) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
+
+                const name = args[1];
+
+                db.createCollection(name);
+                console.log(
+                    `[Daendels] ${SUCCESS.CREATE_COLLECTION(name)}`
+                );
+                return true;
+            }
+            case "HAS_COLLECTION": {
+                if (args.length < 2) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
+
+                const name = args[1];
+
+                const exists = db.hasCollection(name);
+
+                console.log(exists);
+
+                return true;
+            }
+            case "DROP_COLLECTION": {
+                if (args.length < 2) {
+                    console.log(
+                        `[Daendels] ${ERROR.INVALID_ARGUMENT}`
+                    );
+                    return true;
+                }
+
+                const name = args[1];
+
+                db.dropCollection(name);
+                console.log(
+                    `[Daendels] ${SUCCESS.DROP_COLLECTION(name)}`
+                );
+                return true;
+            }
             case "SNAPSHOT": {
                 db.snapshot();
 
@@ -221,6 +276,9 @@ function executeCommand(command, args, rl) {
                     NAMESPACES
                     USE_COLLECTION <collection>
                     COLLECTIONS
+                    CREATE_COLLECTION <name>
+                    HAS_COLLECTION <name>
+                    DROP_COLLECTION <name>
                     SNAPSHOT
                     COMPACT
                     HELP
