@@ -38,6 +38,7 @@ The project emphasizes clean architecture, modular design, and database internal
 
 DaendelsDB uses a hybrid persistence strategy:
 
+```
 In-Memory Map
      │
      ├── Snapshot
@@ -47,6 +48,7 @@ In-Memory Map
      └── Append-Only Log
             ↓
         daendels.log
+```
 
 Snapshots provide a serialized representation of the current database state, while the append-only log records subsequent database operations.
 
@@ -63,7 +65,7 @@ Snapshots provide a serialized representation of the current database state, whi
 
 ## Architecture
 
-```text
+```
 CLI
  │
  ▼
@@ -99,6 +101,7 @@ DaendelsDB Engine
 
 DaendelsDB organizes data using namespaces and collections:
 
+```
 Namespace
    │
    └── Collection
@@ -118,6 +121,7 @@ economy
  └── taxes
       ├── vat → 11
       └── income → 5000
+```
 
 This provides logical separation between groups of collections and their records.
 
@@ -125,7 +129,7 @@ This provides logical separation between groups of collections and their records
 
 ## Project Structure
 
-```text
+```
 daendels-db/
 
 ├── index.js
@@ -218,8 +222,8 @@ daendels-db/
 ### Version 0.8
 
 - ✅ Query filtering
-- ⏳ Prefix search
-- ⏳ Collections API
+- ✅ Prefix search
+- ✅ Collections API
 
 ### Version 0.9
 
