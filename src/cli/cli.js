@@ -33,7 +33,7 @@ function startCLI() {
     =====================================
                 DaendelsDB 
     =====================================
-    Version : 0.7
+    Version : 0.8
     Storage : In-Memory + Snapshot + Append Log
 
     Type HELP for available commands.

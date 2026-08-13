@@ -3,10 +3,13 @@ const path = require("path");
 const ERROR = require("../messages/error");
 const WARNING = require("../messages/warning");
 const { resourceUsage } = require("process");
+const { CREATE_COLLECTION, DROP_COLLECTION } = require("../messages/success");
 
 const ACTIONS = {
     BUILD: "BUILD",
     DEMOLISH: "DEMOLISH",
+    CREATE_COLLECTION: "CREATE_COLLECTION",
+    DROP_COLLECTION: "DROP_COLLECTION",
 };
 
 const ALLOWED_VALUE_TYPES = [
@@ -115,6 +118,12 @@ class DaendelsDB {
                     collection.set(entry.key, entry.value);
                 } else if (entry.action === ACTIONS.DEMOLISH) {
                     collection.delete(entry.key);
+                } else if (entry.action === ACTIONS.CREATE_COLLECTION) {
+                    this._getNamespace(entry.namespace).set(entry.collection, new Map());
+                } else if (entry.action === ACTIONS.DROP_COLLECTION) {
+                    const namespace = this._getNamespace(entry.namespace);
+
+                    namespace.delete(entry.collection);
                 }
             } catch (err) {
                 console.warn(
@@ -125,13 +134,7 @@ class DaendelsDB {
     }
 
     // private method for write data to file
-    _appendLog(
-        action, 
-        namespace, 
-        collection, 
-        key, 
-        value
-    ) { 
+    _appendLog(action, namespace, collection, key, value) { 
         const entry = {
             action,
             namespace,
@@ -415,7 +418,14 @@ class DaendelsDB {
         if (namespace.has(name)) {
             throw this._createError(ERROR.COLLECTION_EXISTS(name));
         }
+
         namespace.set(name, new Map());
+
+        this._appendLog(
+            ACTIONS.CREATE_COLLECTION,
+            this.currentNamespace,
+            name
+        );
 
         return true;
     }
@@ -443,6 +453,13 @@ class DaendelsDB {
             this.currentCollection = "default";
             this._getCollection();
         }
+
+        this._appendLog(
+            ACTIONS.DROP_COLLECTION,
+            this.currentNamespace,
+            name
+        );
+
         namespace.delete(name);
 
         return true;
