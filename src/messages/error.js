@@ -18,7 +18,11 @@ const ERROR = {
     COLLECTION_EXISTS: (name) =>
         `Collection '${name}' already exists.`,
     COLLECTION_NOT_FOUND: (name) =>
-    `Collection '${name}' not found.`,
+        `Collection '${name}' not found.`,
+    TRANSACTION_ACTIVE:
+        "A transaction is already active.",
+    NO_TRANSACTION:
+        "No active transaction.",
 };
 
 module.exports = ERROR
