@@ -12,3 +12,4 @@
 {"action":"BUILD","namespace":"default","collection":"default","key":"post:2","timestamp":"2026-08-10T01:58:43.605Z","value":"Panarukan"}
 {"action":"CREATE_COLLECTION","namespace":"military","collection":"generals","timestamp":"2026-08-13T01:57:21.742Z"}
 {"action":"DROP_COLLECTION","namespace":"military","collection":"generals","timestamp":"2026-08-13T01:58:23.929Z"}
+{"action":"BUILD","namespace":"default","collection":"default","key":"city","timestamp":"2026-08-19T03:32:46.520Z","value":"jakarta"}

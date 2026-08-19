@@ -2,8 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const ERROR = require("../messages/error");
 const WARNING = require("../messages/warning");
-const { resourceUsage } = require("process");
-const { CREATE_COLLECTION, DROP_COLLECTION } = require("../messages/success");
 
 const ACTIONS = {
     BUILD: "BUILD",
@@ -28,6 +26,9 @@ class DaendelsDB {
 
         this.currentNamespace = "default";
         this.currentCollection = "default";
+
+        this.transactionSnapshot = null;
+        this.transactionLog = [];
 
         this.logFilePath = path.resolve(filepath);
         this.snapshotFilePath = path.resolve(snapshotFilePath);
@@ -152,6 +153,23 @@ class DaendelsDB {
         fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
     }
 
+    // append log for transaction
+    _appendTransactionLog(action, namespace, collection, key, value) {
+        const entry = {
+            action,
+            namespace,
+            collection,
+            key,
+            timestamp: new Date().toISOString(),
+        };
+
+        if (value !== undefined) {
+            entry.value = value;
+        }
+
+        this.transactionLog.push(entry);
+    }
+
     // method for handling error message
     _createError(message) {
         return new Error(
@@ -167,15 +185,11 @@ class DaendelsDB {
     // handle the key validation
     _validateKey(key) {
         if (typeof key !== "string") {
-            throw this._createError(
-                ERROR.INVALID_KEY_TYPE
-            );
+            throw this._createError(ERROR.INVALID_KEY_TYPE);
         }
 
         if (!key.trim()) {
-            throw this._createError(
-                ERROR.EMPTY_KEY
-            );
+            throw this._createError(ERROR.EMPTY_KEY);
         }
     }
 
@@ -184,14 +198,10 @@ class DaendelsDB {
         const valueType = typeof value;
 
         if (!ALLOWED_VALUE_TYPES.includes(valueType)) {
-            throw this._createError (
-                ERROR.INVALID_VALUE_TYPE
-            );    
+            throw this._createError (ERROR.INVALID_VALUE_TYPE);    
         }
         if (valueType === "string" && !value.trim()){
-            throw this._createError (
-                ERROR.EMPTY_VALUE
-            );    
+            throw this._createError (ERROR.EMPTY_VALUE);    
         }
     }
 
@@ -209,9 +219,7 @@ class DaendelsDB {
         const collection = this._getCurrentCollection();
 
         if (!collection.has(key)) {
-            throw this._createError (
-                ERROR.KEY_NOT_FOUND(key)
-            );
+            throw this._createError (ERROR.KEY_NOT_FOUND(key));
         }
     }
 
@@ -222,9 +230,7 @@ class DaendelsDB {
         const collection = this._getCurrentCollection();
 
         if (!collection.has(key)) {
-            throw this._createError (
-                ERROR.KEY_NOT_FOUND(key)
-            );
+            throw this._createError (ERROR.KEY_NOT_FOUND(key));
         }
     }
     
@@ -278,6 +284,33 @@ class DaendelsDB {
         }
     }
 
+    // save a condition of the database before trnasaction begin
+    _cloneStorage() {
+        const clone = new Map();
+
+        for (const [namespaceName, namespace] of this.storage) {
+            const namespaceClone = new Map();
+
+            for (const [collectionName, collection] of namespace) {
+                namespaceClone.set(
+                    collectionName,
+                    new Map(collection)
+                );
+            }
+            clone.set(namespaceName, namespaceClone);
+        }
+        return clone;;
+    }
+
+    // to save all changes made in transaction into log file permanently
+    _flushTransactionLog() {
+        for (const entry of this.transactionLog) {
+            const logEntry = JSON.stringify(entry) + "\n";
+            
+            fs.appendFileSync(this.logFilePath, logEntry, "utf-8");
+        }
+    }
+
     // BUILD command (SET)
     build(key, value) {
         // validate input
@@ -287,14 +320,23 @@ class DaendelsDB {
         const collection = this._getCurrentCollection();
         collection.set(key, value);
         
-        // write to disk (append-only)
-        this._appendLog(
-            ACTIONS.BUILD, 
-            this.currentNamespace,
-            this.currentCollection, 
-            key, 
-            value
-        );
+        if (this.transactionSnapshot !== null) {
+            this._appendTransactionLog(
+                ACTIONS.BUILD,
+                this.currentNamespace,
+                this.currentCollection,
+                key,
+                value
+            );
+        } else {
+            this._appendLog(
+                ACTIONS.BUILD, 
+                this.currentNamespace,
+                this.currentCollection, 
+                key, 
+                value
+            );
+        }
         return true;
     }
 
@@ -311,13 +353,21 @@ class DaendelsDB {
         // validate input
         this._validateDemolish(key);
 
-        // write to disk (append-only)
-        this._appendLog(
-            ACTIONS.DEMOLISH, 
-            this.currentNamespace,
-            this.currentCollection, 
-            key
-        );
+        if (this.transactionSnapshot !== null) {
+            this._appendTransactionLog(
+                ACTIONS.DEMOLISH,
+                this.currentNamespace,
+                this.currentCollection,
+                key
+            );
+        } else {
+            this._appendLog(
+                ACTIONS.DEMOLISH, 
+                this.currentNamespace,
+                this.currentCollection, 
+                key
+            );
+        }
         const collection = this._getCurrentCollection();
         collection.delete(key);
             
@@ -527,6 +577,44 @@ class DaendelsDB {
             }
         }
         return results;
+    }
+
+    // BEGIN TRANSACTION (to start a transaction)
+    beginTransaction() {
+        if (this.transactionSnapshot !== null) {
+            throw this._createError(ERROR.TRANSACTION_ACTIVE);
+        }
+
+        this.transactionSnapshot = {
+            snapshot: this._cloneStorage(),
+        };
+        return true;
+    }
+
+    // COMMIT (save transaction changes into database)
+    commit() {
+        if (this.transactionSnapshot === null) {
+            throw this._createError(ERROR.NO_TRANSACTION);
+        }
+        this._flushTransactionLog();
+
+        this.transactionSnapshot = null;
+        this.transactionLog = [];
+
+        return true;
+    }
+
+    // ROLLBACK (rewind to last state of the database)
+    rollback() {
+        if (this.transactionSnapshot === null) {
+            throw this._createError(ERROR.NO_TRANSACTION);
+        }
+        this.storage = this.transactionSnapshot.snapshot;
+
+        this.transactionSnapshot = null;
+        this.transactionLog = [];
+        
+        return true;
     }
 }
 module.exports = DaendelsDB;

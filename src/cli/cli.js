@@ -12,7 +12,6 @@ function startCLI() {
         output: process.stdout,
     });
 
-
     rl.on("line", (input) => {
         const args = input.trim().split(" ");
         const command = args[0].toUpperCase();
@@ -261,6 +260,33 @@ function executeCommand(command, args, rl) {
 
                 return true;
             }
+            case "BEGIN": {
+                db.beginTransaction();
+
+                console.log(
+                    `[Daendels] ${SUCCESS.TRANSACTION_BEGIN}`
+                );
+        
+                return true;
+            }
+            case "COMMIT": {
+                db.commit();
+
+                console.log(
+                    `[Daendels] ${SUCCESS.TRANSACTION_COMMIT}`
+                );
+
+                return true;
+            }
+            case "ROLLBACK": {
+                db.rollback();
+
+                console.log(
+                    `[Daendels] ${SUCCESS.ROLLBACK}`
+                );
+
+                return true;
+            }
             case "HELP": {
                 console.log(`
                     Available Commands
@@ -272,15 +298,23 @@ function executeCommand(command, args, rl) {
                     RECON <field> <operator> <value>
                     FIND <prefix>
                     REPORT
+
                     USE_NAMESPACE <name>
                     NAMESPACES
+
                     USE_COLLECTION <collection>
                     COLLECTIONS
                     CREATE_COLLECTION <name>
                     HAS_COLLECTION <name>
                     DROP_COLLECTION <name>
+
                     SNAPSHOT
                     COMPACT
+
+                    BEGIN
+                    COMMIT
+                    ROLLBACK
+
                     HELP
                     EXIT
                 `);
