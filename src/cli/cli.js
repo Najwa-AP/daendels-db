@@ -32,7 +32,7 @@ function startCLI() {
     =====================================
                 DaendelsDB 
     =====================================
-    Version : 0.8
+    Version : 0.9
     Storage : In-Memory + Snapshot + Append Log
 
     Type HELP for available commands.
@@ -270,7 +270,7 @@ function executeCommand(command, args, rl) {
                 return true;
             }
             case "COMMIT": {
-                db.commit();
+                db.commitTransaction();
 
                 console.log(
                     `[Daendels] ${SUCCESS.TRANSACTION_COMMIT}`

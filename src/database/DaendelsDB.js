@@ -170,6 +170,27 @@ class DaendelsDB {
         this.transactionLog.push(entry);
     }
 
+     // method for handling all append log method
+    _appendOperation(action, namespace, collection, key, value) {
+        if (this.transactionSnapshot !== null) {
+            this._appendTransactionLog(
+                action, 
+                namespace, 
+                collection, 
+                key, 
+                value
+            );
+        } else {
+            this._appendLog(
+                action, 
+                namespace, 
+                collection, 
+                key, 
+                value
+            );
+        }
+    }
+
     // method for handling error message
     _createError(message) {
         return new Error(
@@ -320,23 +341,13 @@ class DaendelsDB {
         const collection = this._getCurrentCollection();
         collection.set(key, value);
         
-        if (this.transactionSnapshot !== null) {
-            this._appendTransactionLog(
-                ACTIONS.BUILD,
-                this.currentNamespace,
-                this.currentCollection,
-                key,
-                value
-            );
-        } else {
-            this._appendLog(
-                ACTIONS.BUILD, 
-                this.currentNamespace,
-                this.currentCollection, 
-                key, 
-                value
-            );
-        }
+        this._appendOperation(
+            ACTIONS.BUILD,
+            this.currentNamespace,
+            this.currentCollection,
+            key, 
+            value
+        );
         return true;
     }
 
@@ -353,21 +364,12 @@ class DaendelsDB {
         // validate input
         this._validateDemolish(key);
 
-        if (this.transactionSnapshot !== null) {
-            this._appendTransactionLog(
-                ACTIONS.DEMOLISH,
-                this.currentNamespace,
-                this.currentCollection,
-                key
-            );
-        } else {
-            this._appendLog(
-                ACTIONS.DEMOLISH, 
-                this.currentNamespace,
-                this.currentCollection, 
-                key
-            );
-        }
+        this._appendOperation(
+            ACTIONS.DEMOLISH,
+            this.currentNamespace,
+            this.currentCollection,
+            key
+        );
         const collection = this._getCurrentCollection();
         collection.delete(key);
             
@@ -417,7 +419,7 @@ class DaendelsDB {
 
         return {
             database: "DaendelsDB",
-            version: "0.7",
+            version: "0.9",
             engine: "In-Memory + Snapshot + Append Log",
             currentNamespace: this.currentNamespace,
             currentCollection: this.currentCollection,
@@ -463,7 +465,8 @@ class DaendelsDB {
     createCollection(name) {
         this._validateKey(name);
 
-        const namespace = this._getNamespace(this.currentNamespace);
+        const namespace = 
+            this._getNamespace(this.currentNamespace);
 
         if (namespace.has(name)) {
             throw this._createError(ERROR.COLLECTION_EXISTS(name));
@@ -471,7 +474,7 @@ class DaendelsDB {
 
         namespace.set(name, new Map());
 
-        this._appendLog(
+        this._appendOperation(
             ACTIONS.CREATE_COLLECTION,
             this.currentNamespace,
             name
@@ -504,7 +507,7 @@ class DaendelsDB {
             this._getCollection();
         }
 
-        this._appendLog(
+        this._appendOperation(
             ACTIONS.DROP_COLLECTION,
             this.currentNamespace,
             name
@@ -587,12 +590,14 @@ class DaendelsDB {
 
         this.transactionSnapshot = {
             snapshot: this._cloneStorage(),
+            currentNamespace: this.currentNamespace,
+            currentCollection: this.currentCollection,
         };
         return true;
     }
 
-    // COMMIT (save transaction changes into database)
-    commit() {
+    // COMMIT TRANSACTION (save transaction changes into database)
+    commitTransaction() {
         if (this.transactionSnapshot === null) {
             throw this._createError(ERROR.NO_TRANSACTION);
         }
@@ -610,6 +615,12 @@ class DaendelsDB {
             throw this._createError(ERROR.NO_TRANSACTION);
         }
         this.storage = this.transactionSnapshot.snapshot;
+
+        this.currentNamespace = 
+            this.transactionSnapshot.currentNamespace;
+
+        this.currentCollection = 
+            this.transactionSnapshot.currentCollection;
 
         this.transactionSnapshot = null;
         this.transactionLog = [];
